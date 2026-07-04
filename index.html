@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Love Universe Ultimate</title>
+<style>
+body{margin:0;overflow:hidden;background:#02020a;color:white;font-family:Arial}
+canvas{position:fixed;inset:0}
+#title{
+position:fixed;top:20px;width:100%;text-align:center;
+font-size:28px;font-weight:bold;text-shadow:0 0 15px white;
+z-index:10;
+}
+.photo{
+position:absolute;
+width:90px;height:90px;
+border-radius:50%;
+object-fit:cover;
+border:3px solid white;
+box-shadow:0 0 20px rgba(255,255,255,.8);
+z-index:5;
+cursor:pointer;
+}
+#heart{
+position:fixed;
+left:50%;
+top:50%;
+transform:translate(-50%,-50%);
+font-size:clamp(90px,18vw,130px);
+z-index:6;
+filter:drop-shadow(0 0 25px white);
+pointer-events:none;
+}
+
+@media (max-width:768px){
+  .photo{
+    width:70px;
+    height:70px;
+  }
+  #title{
+    font-size:22px;
+    top:12px;
+  }
+}
+#popup{
+display:none;position:fixed;inset:0;
+background:rgba(0,0,0,.9);
+align-items:center;justify-content:center;
+z-index:20;
+}
+#popup img{
+max-width:85vw;max-height:85vh;border-radius:20px;
+}
+#music{
+position:fixed;right:15px;bottom:15px;z-index:20;
+padding:10px 15px;border:none;border-radius:10px;
+cursor:pointer;
+}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="title">💖 Красавица этой вселенной 💖</div>
+<div id="heart">❤️</div>
+<button id="music" onclick="document.getElementById('song').play()">🎵 Музыка</button>
+<audio id="song" src="music.mp3"></audio>
+
+<div id="popup" onclick="this.style.display='none'">
+<img id="bigPhoto">
+</div>
+
+<script>
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+
+function resize(){
+ canvas.width=innerWidth;
+ canvas.height=innerHeight;
+}
+resize();
+addEventListener('resize',resize);
+
+const stars=[];
+for(let i=0;i<1000;i++){
+ stars.push({
+  x:(Math.random()-0.5)*3000,
+  y:(Math.random()-0.5)*3000,
+  z:Math.random()*3000
+ });
+}
+
+function animateStars(){
+ ctx.fillStyle='#02020a';
+ ctx.fillRect(0,0,canvas.width,canvas.height);
+
+ for(const s of stars){
+   s.z-=8;
+   if(s.z<=0) s.z=3000;
+
+   const k=300/s.z;
+   const x=s.x*k+canvas.width/2;
+   const y=s.y*k+canvas.height/2;
+
+   if(x<0||x>canvas.width||y<0||y>canvas.height) continue;
+
+   const r=(1-s.z/3000)*2;
+   ctx.beginPath();
+   ctx.arc(x,y,r,0,Math.PI*2);
+   ctx.fillStyle='white';
+   ctx.fill();
+ }
+
+ requestAnimationFrame(animateStars);
+}
+animateStars();
+
+const photos=[];
+const radius=Math.min(innerWidth,innerHeight)<768?140:260;
+
+for(let i=1;i<=10;i++){
+ const img=document.createElement('img');
+ img.src='photo'+i+'.jpg';
+ img.className='photo';
+ document.body.appendChild(img);
+
+ img.onclick=()=>{
+   document.getElementById('bigPhoto').src=img.src;
+   document.getElementById('popup').style.display='flex';
+ };
+
+ photos.push({el:img,offset:i*Math.PI*2/10});
+}
+
+function orbit(){
+ const t=Date.now()/3500;
+
+ for(const p of photos){
+   const x=Math.cos(t+p.offset)*radius;
+   const y=Math.sin(t+p.offset)*radius;
+
+   p.el.style.left=(innerWidth/2+x-45)+'px';
+   p.el.style.top=(innerHeight/2+y-45)+'px';
+ }
+ requestAnimationFrame(orbit);
+}
+orbit();
+
+const song=document.getElementById('song');
+song.autoplay=true;
+song.muted=false;
+
+function startMusic(){
+  song.play().catch(()=>{});
+}
+
+window.addEventListener('load',startMusic);
+document.addEventListener('click',startMusic,{once:true});
+document.addEventListener('touchstart',startMusic,{once:true});
+
+</script>
+</body>
+</html>
